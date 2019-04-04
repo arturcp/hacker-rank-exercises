@@ -1,19 +1,22 @@
 #!/bin/ruby
 require 'byebug'
 require 'colorize'
+require 'rgl/adjacency'
 
 # https://www.hackerrank.com/challenges/abbr/problem
 class Abbreviation
+  attr_reader :ended
+
   def abbreviation(a, b)
+    ended = false
     abbr?(a, b, 1) ? 'YES' : 'NO'
   end
 
   private
 
-  def colorize(string, color)
-    return string if ENV['DISABLE_COLORS']
+  def build_tree
+    graph = RGL::DirectedAdjacencyGraph.new
 
-    string.send(color)
   end
 
   def log(text)
@@ -24,7 +27,7 @@ class Abbreviation
 
   def can_cut_remainder?(a, index_a)
     log "can_cut_remainder? index: #{index_a} a: #{a.inspect}"
-    return true if index_a > a.length
+    return false if index_a > a.length
 
     text = a.slice(index_a, a.length - index_a)
     log text
@@ -36,19 +39,19 @@ class Abbreviation
     # return false if a.chars.reject(&:is_lower?).count > b.chars.count
 
     log ''
-    log "#{colorize('abbr?', 'green')}('#{colorize(a, 'yellow')}', '#{colorize(b, 'light_blue')}')"
-    log "ID: #{colorize(id.to_s, 'green')}"
+    log "#{'abbr?'.green}('#{a.yellow}', '#{b.light_blue}')"
+    log "ID: #{id.to_s.green}"
     log '-------------------------------------'
     index_a = 0
 
     b.chars.each_with_index do |letter, index_b|
-      log "Evaluating letter #{colorize(letter, 'light_blue')}"
+      log "Evaluating letter #{letter.light_blue}"
       while index_a < a.length && letter != a[index_a].upcase && a[index_a].is_lower?
         index_a += 1
       end
 
       if a[index_a]
-        log "Found letter #{colorize(a[index_a], 'yellow')} as valid candidate."
+        log "Found letter #{a[index_a].yellow} as valid candidate."
       else
         log 'Did not find a valid candidate.'
       end
@@ -60,29 +63,30 @@ class Abbreviation
           array_passing_letter = a.slice(index_a + 1, a.size - 1)
 
           if has_letter_again?(array_passing_letter, a[index_a])
-            log "Trying to pass letter '#{colorize(a[index_a], 'yellow')}'..."
+            log "Trying to pass letter '#{a[index_a].yellow}'..."
             result = abbr?(array_passing_letter, b.slice(index_b, b.size), id + 1)
 
             if result
               log 'Successful pass'
               return true
             else
-              log "#{colorize('Failed', 'red')} to pass letter #{colorize(a[index_a], 'yellow')}"
+              log "#{'Failed'.red} to pass letter #{a[index_a].yellow}"
               log '-------------------------------------'
               log ''
-              log "[We are back to #{colorize('abbr?', 'green')}('#{colorize(a, 'yellow')}', '#{colorize(b, 'light_blue')}')]"
-              log "ID: #{colorize(id.to_s, 'green')}"
+              log "[We are back to #{'abbr?'.green}('#{a.yellow}', '#{b.light_blue}')]"
+              log "ID: #{id.to_s.green}"
             end
           else
-            log "It does not have any more #{colorize(a[index_a], 'red')}"
+            log "It does not have any more #{a[index_a].red}"
           end
         end
 
-        log "Using upcase version of #{colorize(a[index_a], 'yellow')}"
+        log "Using upcase version of #{a[index_a].yellow}"
         index_a += 1
         # next
 
-        # puts b.size.to_s.blue
+        puts b.size.to_s.blue
+        # gets
       else
         return false
       end
